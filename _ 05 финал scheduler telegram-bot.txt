@@ -1,0 +1,141 @@
+schedule1
+
+
+:local URL "https://api.telegram.org/botxxx:xxxxxx";
+
+:local parse do={
+:local startLoc ([:find $content $variable -1] + [:len $variable] + 2);
+:local commaLoc ([:find $content "," $startLoc] - 1 + 1);
+:local braceLoc ([:find $content "}" $startLoc] - 1 + 1);
+:local endLoc $commaLoc;
+:local startSymbol [:pick $content $startLoc]
+:if ($braceLoc != 0 and ($commaLoc = 0 or $braceLoc < $commaLoc)) do={ :set endLoc $braceLoc; };
+:if ($startSymbol = "{") do={ :set endLoc ($braceLoc + 1); };
+:if ($quotas = true) do={ :set startLoc ($startLoc + 1); :set endLoc ($endLoc - 1); }
+:if ($endLoc < $startLoc) do={ :set endLoc ($startLoc + 1); };
+:local message [:pick $content $startLoc $endLoc]
+:return $message;
+}
+
+#------------------------------------------------------------------------------
+
+
+:local working do={
+
+# insite function test
+:local testaddress do={
+:local message "$name="; :if ( [/ping $IP interval=1 count=2] = "0" ) do={ :set message "$message<b>Off</b>" } else { :set message "$message<b>Working</b>" }
+:set message "$message Internet="; :if ( [/ip firewall address-list find list=USER_OK address=$IP] = "" ) do={ :set message "$message<b>denied</b>" } else { :set message "$message<b>access</b>" }
+:return $message;
+}
+
+
+:local STR "";
+
+:if ( $Message = "/info" ) do={
+  :set STR "$STR/info     /status%0A %0A";
+  :set STR "$STR/sveta_pc_off  /sveta_pc_on%0A %0A";
+  :set STR "$STR/dima_pc_off   /dima_pc_on%0A %0A";
+  :set STR "$STR/tv_off       /tv_on%0A %0A";
+  :set STR "$STR/all_off      /all_on%0A %0A";
+  }
+
+:if ( $Message = "/all_off" ) do={
+  /ip firewall address-list remove [/ip firewall address-list find list=USER_OK address=192.168.1.x];   # tablet dexp
+  /ip firewall address-list remove [/ip firewall address-list find list=USER_OK address=192.168.1.x];   # dima-pc
+  /ip firewall address-list remove [/ip firewall address-list find list=USER_OK address=192.168.1.x];  # dima-pc
+  /ip firewall address-list remove [/ip firewall address-list find list=USER_OK address=192.168.1.x];  # tv dety
+  /ip firewall address-list remove [/ip firewall address-list find list=USER_OK address=192.168.1.x];  # tv zal
+  /ip firewall address-list remove [/ip firewall address-list find list=USER_OK address=192.168.1.x];  # sveta-pc
+  :set STR "$STR<b>internet disable</b> [tablet dexp, tv dety, tv zal, dima-pc, aspire, sveta-pc";
+  }
+
+:if ( $Message = "/all_on" ) do={
+  /ip firewall address-list add address=192.168.1.x list=USER_OK;   # tablet dexp
+  /ip firewall address-list add address=192.168.1.x list=USER_OK;   # dima-pc
+  /ip firewall address-list add address=192.168.1.x list=USER_OK;  # dima-pc
+  /ip firewall address-list add address=192.168.1.x list=USER_OK;  # tv dety
+  /ip firewall address-list add address=192.168.1.x list=USER_OK;  # tv zal
+  /ip firewall address-list add address=192.168.1.x list=USER_OK;  # sveta-pc
+  :set STR "$STR<b>internet enabled</b> [tablet dexp, tv dety, tv zal, raspberry-pi, dima-pc, sveta-pc]";
+  }
+
+:if ( $Message = "/sveta_pc_off" ) do={
+  /ip firewall address-list remove [/ip firewall address-list find list=USER_OK address=192.168.1.x];
+  :set STR "$STR<b>internet disable</b> [sveta-pc]";
+  }
+
+:if ( $Message = "/sveta_pc_on" ) do={
+  /ip firewall address-list add address=192.168.1.x list=USER_OK;  # sveta-pc
+  :set STR "$STR<b>internet enabled</b> [sveta-pc]";
+  }
+
+:if ( $Message = "/dima_pc_off" ) do={
+  /ip firewall address-list remove [/ip firewall address-list find list=USER_OK address=192.168.1.x];   # dima-pc
+  /ip firewall address-list remove [/ip firewall address-list find list=USER_OK address=192.168.1.x];  # dima-pc
+  :set STR "$STR<b>internet disable</b> [dima-pc]";
+  }
+
+:if ( $Message = "/dima_pc_on" ) do={
+  /ip firewall address-list add address=192.168.1.x list=USER_OK;   # dima-pc
+  /ip firewall address-list add address=192.168.1.x list=USER_OK;  # dima-pc
+  :set STR "$STR<b>internet enabled</b> [dima-pc]";
+  }
+
+:if ( $Message = "/tv_off" ) do={
+   /ip firewall address-list remove [/ip firewall address-list find list=USER_OK address=192.168.1.x];   # tablet dexp
+   /ip firewall address-list remove [/ip firewall address-list find list=USER_OK address=192.168.1.x];  # tv dety
+   /ip firewall address-list remove [/ip firewall address-list find list=USER_OK address=192.168.1.x];  # raspberry-pi
+   /ip firewall address-list remove [/ip firewall address-list find list=USER_OK address=192.168.1.x];  # tv zal
+   :set STR "$STR<b>internet disable</b> [tablet dexp, tv dety, tv zal, raspberry-pi]";
+   }
+
+:if ( $Message = "/tv_on" ) do={
+   /ip firewall address-list add address=192.168.1.x list=USER_OK;   # tablet dexp
+   /ip firewall address-list add address=192.168.1.x list=USER_OK;  # tv dety
+   /ip firewall address-list add address=192.168.1.x list=USER_OK;  # raspberry-pi
+   /ip firewall address-list add address=192.168.1.x list=USER_OK;  # tv zal
+   :set STR "$STR<b>internet enabled</b> [tablet dexp, tv dety, tv zal, raspberry-pi]";
+   }
+
+:if ( $Message = "/status" ) do={
+  :set STR "<b>Status:</b>%0A"
+  :local RES [$testaddress name="sveta-pc" IP="192.168.1.x"]; :set STR "$STR$RES%0A";
+  :local RES [$testaddress name="tv zal" IP="192.168.1.x"]; :set STR "$STR$RES%0A";
+  :local RES [$testaddress name="tv dety" IP="192.168.1.x"]; :set STR "$STR$RES%0A";
+  :local RES [$testaddress name="dima-pc-lan" IP="192.168.1.x"]; :set STR "$STR$RES%0A";
+  :local RES [$testaddress name="dima-pc-wifi" IP="192.168.1.x"]; :set STR "$STR$RES%0A";
+
+  }
+
+:tool fetch url=("$URL/sendmessage\?chat_id=$ChatID&text=$STR&parse_mode=HTML") keep-result=no
+:return 1;
+}
+#------------------------------------------------------------------------------
+
+
+#
+:local httpResponse [:tool fetch url="$URL/getUpdates\?limit=1" as-value output=user];
+:local content ($httpResponse->"data");
+
+
+:if ([:len $content] > 30) do={
+  :local UpdateID [$parse content=$content variable="update_id"]
+  :local Message [$parse content=$content variable="text" quotas=true]
+  :local Messagetype [:typeof $Message];
+  :local chat [$parse content=$content variable="chat"]
+  :local ChatID [$parse content=$chat variable="id"]
+  :local ChatIDtype [:typeof $ChatID];
+
+  # UpdateID +1 - offset
+  :set UpdateID ($UpdateID+1);
+  :tool fetch url=("$URL/getUpdates?offset=$UpdateID") keep-result=no
+
+  :if ( ( $ChatIDtype = "str" ) and ( $Messagetype = "str" ) and ( ( $ChatID = "00000000" ) or ( $ChatID = "1111111" ) ) ) do={
+    :local D [$working URL=$URL ChatID=$ChatID Message=$Message]
+  } else {
+   :tool fetch url=("$URL/sendmessage\?chat_id=$ChatID&text=<b>Access is denied $ChatID</b>&parse_mode=HTML") keep-result=no
+  }
+
+
+}
